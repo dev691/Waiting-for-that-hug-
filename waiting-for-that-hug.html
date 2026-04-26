@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a0b2e">
+    <title>Countdown to the Hug ❤️</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+
+    <style>
+        /* === CSS Variables & Theming === */
+        :root {
+            --primary-bg: #1a0b2e;
+            --accent-pink: #ff4b82;
+            --accent-purple: #9d4edd;
+            --text-light: #ffffff;
+            --text-dim: #f8bbd0;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glow: 0 0 20px rgba(255, 75, 130, 0.4);
+        }
+
+        /* === Reset & Base Styles === */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Hide scrollbars for the canvas animation */
+            position: relative;
+        }
+
+        /* === Canvas Background === */
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: radial-gradient(circle at center, #2e104a 0%, #0d021a 100%);
+        }
+
+        /* === Glassmorphism Container === */
+        .glass-panel {
+            position: relative;
+            z-index: 2;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: clamp(2rem, 5vw, 4rem);
+            text-align: center;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.05);
+            max-width: 1000px;
+            width: 90%;
+            animation: fadeIn 1.5s ease-out forwards;
+        }
+
+        /* === Typography & Headings === */
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            font-weight: 600;
+            font-style: italic;
+            background: linear-gradient(to right, #ffb3c6, #ff4b82, #e0aaff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .subtitle {
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        /* === Countdown Grid === */
+        .countdown-wrapper {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 1.5rem;
+            justify-items: center;
+        }
+
+        .time-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 1.5rem 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .time-box:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--glow);
+            border-color: rgba(255, 75, 130, 0.3);
+        }
+
+        .number {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        /* Highlighting the microsecond counter for visual energy */
+        .micro-box .number {
+            color: var(--accent-pink);
+            text-shadow: 0 0 10px rgba(255, 75, 130, 0.5);
+        }
+
+        /* === Finished State === */
+        #success-state {
+            display: none;
+            animation: popIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .heart-icon {
+            font-size: 5rem;
+            animation: heartbeat 1.2s infinite;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        /* === Animations === */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.3); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+
+        /* === Mobile Specific Tweaks === */
+        @media (max-width: 768px) {
+            .countdown-wrapper {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+            }
+            .time-box {
+                padding: 1rem 0.5rem;
+            }
+            .micro-box {
+                grid-column: 1 / -1; /* Microseconds span full width on small screens */
+                flex-direction: row;
+                gap: 1rem;
+            }
+            .micro-box .number {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <main class="glass-panel">
+        
+        <div id="countdown-view">
+            <h1>Waiting for that Hug</h1>
+            <div class="subtitle">Countdown until we're together again</div>
+            
+            <div class="countdown-wrapper">
+                <div class="time-box"><span class="number" id="val-months">00</span><span class="label">Months</span></div>
+                <div class="time-box"><span class="number" id="val-weeks">00</span><span class="label">Weeks</span></div>
+                <div class="time-box"><span class="number" id="val-days">00</span><span class="label">Days</span></div>
+                <div class="time-box"><span class="number" id="val-hours">00</span><span class="label">Hours</span></div>
+                <div class="time-box"><span class="number" id="val-minutes">00</span><span class="label">Minutes</span></div>
+                <div class="time-box"><span class="number" id="val-seconds">00</span><span class="label">Seconds</span></div>
+                <div class="time-box micro-box"><span class="number" id="val-micro">000000</span><span class="label">Microsec</span></div>
+            </div>
+        </div>
+
+        <div id="success-state">
+            <h1>You made it!</h1>
+            <div class="subtitle">Time for the best hug ever.</div>
+            <div class="heart-icon">❤️</div>
+        </div>
+
+    </main>
+
+    <script>
+        // ==========================================
+        // 1. COUNTDOWN LOGIC
+        // ==========================================
+        (() => {
+            // Target Landing Time: Sept 20, 2026, 13:40 local arrival time (+07:00 timezone)
+            const targetDate = new Date('2026-09-20T13:40:00+07:00').getTime();
+
+            // DOM Elements
+            const viewCountdown = document.getElementById('countdown-view');
+            const viewSuccess = document.getElementById('success-state');
+            
+            const els = {
+                mo: document.getElementById('val-months'),
+                wk: document.getElementById('val-weeks'),
+                dy: document.getElementById('val-days'),
+                hr: document.getElementById('val-hours'),
+                mn: document.getElementById('val-minutes'),
+                sc: document.getElementById('val-seconds'),
+                ms: document.getElementById('val-micro')
+            };
+
+            // Time Constants
+            const MS_SEC = 1000;
+            const MS_MIN = MS_SEC * 60;
+            const MS_HR = MS_MIN * 60;
+            const MS_DAY = MS_HR * 24;
+            const MS_WEEK = MS_DAY * 7;
+            const MS_MONTH = MS_DAY * 30.436875;
+
+            const pad = (num, len = 2) => String(num).padStart(len, '0');
+
+            const tick = () => {
+                const diff = targetDate - Date.now();
+
+                if (diff <= 0) {
+                    viewCountdown.style.display = 'none';
+                    viewSuccess.style.display = 'block';
+                    return;
+                }
+
+                let remainder = diff;
+
+                const months = Math.floor(remainder / MS_MONTH); remainder %= MS_MONTH;
+                const weeks = Math.floor(remainder / MS_WEEK); remainder %= MS_WEEK;
+                const days = Math.floor(remainder / MS_DAY); remainder %= MS_DAY;
+                const hours = Math.floor(remainder / MS_HR); remainder %= MS_HR;
+                const minutes = Math.floor(remainder / MS_MIN); remainder %= MS_MIN;
+                const seconds = Math.floor(remainder / MS_SEC); remainder %= MS_SEC;
+                
+                // Microsecond blur simulation
+                const ms = Math.floor(remainder);
+                const micro = (ms * 1000) + Math.floor(Math.random() * 1000);
+
+                els.mo.textContent = pad(months);
+                els.wk.textContent = pad(weeks);
+                els.dy.textContent = pad(days);
+                els.hr.textContent = pad(hours);
+                els.mn.textContent = pad(minutes);
+                els.sc.textContent = pad(seconds);
+                els.ms.textContent = pad(micro, 6);
+
+                requestAnimationFrame(tick);
+            };
+
+            requestAnimationFrame(tick);
+        })();
+
+        // ==========================================
+        // 2. CANVAS PARTICLE ANIMATION (FLOATING HEARTS & STARS)
+        // ==========================================
+        (() => {
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const particleCount = 60;
+
+            const resize = () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            };
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                    this.y = Math.random() * canvas.height; // Initial random distribution
+                }
+
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + Math.random() * 100;
+                    this.size = Math.random() * 3 + 1;
+                    this.speedY = Math.random() * 1.5 + 0.5;
+                    this.speedX = (Math.random() - 0.5) * 0.5;
+                    this.opacity = Math.random() * 0.5 + 0.2;
+                    this.type = Math.random() > 0.7 ? 'heart' : 'circle';
+                    this.color = this.type === 'heart' ? `rgba(255, 75, 130, ${this.opacity})` : `rgba(255, 255, 255, ${this.opacity})`;
+                }
+
+                update() {
+                    this.y -= this.speedY;
+                    this.x += this.speedX;
+                    if (this.y < -50) this.reset();
+                }
+
+                drawHeart(ctx, x, y, size) {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.scale(size / 15, size / 15);
+                    ctx.beginPath();
+                    ctx.moveTo(0, 5);
+                    ctx.bezierCurveTo(0, 0, -5, 0, -5, -5);
+                    ctx.bezierCurveTo(-5, -10, 5, -10, 5, -5);
+                    ctx.bezierCurveTo(5, -10, 15, -10, 15, -5);
+                    ctx.bezierCurveTo(15, 0, 10, 0, 10, 5);
+                    ctx.lineTo(5, 12);
+                    ctx.closePath();
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                draw() {
+                    if (this.type === 'circle') {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    } else {
+                        this.drawHeart(ctx, this.x, this.y, this.size * 3);
+                    }
+                }
+            }
+
+            const initParticles = () => {
+                particles = [];
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle());
+                }
+            };
+
+            const animateParticles = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animateParticles);
+            };
+
+            initParticles();
+            animateParticles();
+        })();
+    </script>
+</body>
+</html>
